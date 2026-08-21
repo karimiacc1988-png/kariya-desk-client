@@ -31,9 +31,9 @@ import 'mobile/widgets/deploy_dialog.dart';
 import 'models/platform_model.dart';
 
 import 'package:flutter_hbb/plugin/handlers.dart'
+    if (dart.library.html) 'package:flutter_hbb/web/plugin/handlers.dart';
 // --- کاریا دسک ---
 import 'package:flutter_hbb/kariya/kariya_api.dart';
-    if (dart.library.html) 'package:flutter_hbb/web/plugin/handlers.dart';
 
 /// Basic window and launch properties.
 int? kWindowId;

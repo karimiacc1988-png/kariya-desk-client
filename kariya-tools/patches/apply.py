@@ -71,7 +71,21 @@ def add_imports(path, imports):
         print("  = ایمپورت‌ها از قبل هست: %s" % os.path.relpath(path))
         return
     lines = src.split(NL)
-    last = max(i for i, ln in enumerate(lines) if ln.startswith("import "))
+    # ⚠️ ایمپورت شرطیِ دارت دو خطی است:
+    #     import 'a.dart'
+    #         if (dart.library.html) 'b.dart';
+    # پس باید بعد از خطی درج کنیم که دستور ایمپورت را با ';' تمام کرده،
+    # نه صرفاً بعد از آخرین خطی که با import شروع می‌شود.
+    in_import = False
+    last = -1
+    for i, ln in enumerate(lines):
+        if ln.startswith("import ") or ln.startswith("export "):
+            in_import = True
+        if in_import and ln.rstrip().endswith(";"):
+            last = i
+            in_import = False
+    if last < 0:
+        raise SystemExit("هیچ ایمپورتی در %s پیدا نشد" % path)
     lines[last + 1:last + 1] = ["// --- کاریا دسک ---"] + needed
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(NL.join(lines))

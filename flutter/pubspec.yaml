@@ -154,6 +154,14 @@ flutter:
     - assets/
 
   fonts:
+    - family: Kariya
+      fonts:
+        - asset: assets/fonts/Kariya-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Kariya-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Kariya-Bold.ttf
+          weight: 700
     - family: GestureIcons
       fonts:
         - asset: assets/gestures.ttf

@@ -159,6 +159,44 @@ def main(target):
          "  KariyaApi.load();", "KariyaApi.load();"),
     ])
 
+    # ۶) فونت سایت کاریا (یکان‌بخ) — همان فونتی که kariyahesab.com با آن نوشته شده
+    font_src = os.path.join(ROOT, "assets", "fonts")
+    font_dst = os.path.join(target, "flutter", "assets", "fonts")
+    os.makedirs(font_dst, exist_ok=True)
+    weights = {"Sakou-400.ttf": "Kariya-Regular.ttf",
+               "Sakou-600.ttf": "Kariya-SemiBold.ttf",
+               "Sakou-700.ttf": "Kariya-Bold.ttf"}
+    for src_name, dst_name in weights.items():
+        src = os.path.join(font_src, src_name)
+        if os.path.isfile(src):
+            shutil.copy2(src, os.path.join(font_dst, dst_name))
+    print("  ✓ فونت کاریا در flutter/assets/fonts کپی شد")
+
+    pubspec = os.path.join(target, "flutter", "pubspec.yaml")
+    edit(pubspec, [(
+        "  fonts:" + NL,
+        "  fonts:" + NL +
+        "    - family: Kariya" + NL +
+        "      fonts:" + NL +
+        "        - asset: assets/fonts/Kariya-Regular.ttf" + NL +
+        "          weight: 400" + NL +
+        "        - asset: assets/fonts/Kariya-SemiBold.ttf" + NL +
+        "          weight: 600" + NL +
+        "        - asset: assets/fonts/Kariya-Bold.ttf" + NL +
+        "          weight: 700" + NL,
+        "family: Kariya")])
+
+    # ۷) فونت برند روی کل برنامه، نه فقط صفحه‌های خودمان
+    common = os.path.join(target, "flutter", "lib", "common.dart")
+    edit(common, [
+        ("  static ThemeData lightTheme = ThemeData(" + NL,
+         "  static ThemeData lightTheme = ThemeData(" + NL +
+         "    fontFamily: 'Kariya', // kariya-light" + NL, "// kariya-light"),
+        ("  static ThemeData darkTheme = ThemeData(" + NL,
+         "  static ThemeData darkTheme = ThemeData(" + NL +
+         "    fontFamily: 'Kariya', // kariya-dark" + NL, "// kariya-dark"),
+    ])
+
     print(NL + "تمام شد؛ سورس آماده‌ی ساخت است.")
 
 

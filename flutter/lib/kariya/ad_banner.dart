@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'kariya_api.dart';
+import 'kariya_theme.dart';
 
 class KariyaAdBanner extends StatefulWidget {
   const KariyaAdBanner({Key? key}) : super(key: key);
@@ -74,7 +75,7 @@ class _KariyaAdBannerState extends State<KariyaAdBanner> {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(_hover ? 0.22 : 0.12),
+                  color: K.blue.withOpacity(_hover ? 0.28 : 0.14),
                   blurRadius: _hover ? 22 : 14,
                   offset: const Offset(0, 8),
                 ),
@@ -111,9 +112,10 @@ class _KariyaAdBannerState extends State<KariyaAdBanner> {
                         title,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
+                          fontFamily: K.font,
                           color: Colors.white,
                           fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

@@ -81,6 +81,31 @@ def main(target):
         fh.write(NL.join(out) + NL)
     print("  ✓ ساخته شد: .github/workflows/kariya-windows.yml")
 
+    # بریجِ مخصوص فلاتر ۳.۴۴ فقط برای ویندوز ARM لازم است؛ ما ARM نمی‌سازیم و
+    # این جاب هر بیلد را حدود بیست دقیقه طولانی‌تر می‌کند.
+    bridge = os.path.join(target, ".github", "workflows", "bridge.yml")
+    with open(bridge, encoding="utf-8") as fh:
+        btext = fh.read()
+    if "bridge-artifact-flutter-3.44" in btext:
+        blines = btext.split(NL)
+        keep, entry = [], None
+        for ln in blines:
+            st = ln.strip()
+            if entry is None and st.startswith("- {"):
+                entry = [ln]
+                continue
+            if entry is not None:
+                entry.append(ln)
+                if st in ("}", "},"):
+                    if "3.44" not in NL.join(entry):
+                        keep.extend(entry)
+                    entry = None
+                continue
+            keep.append(ln)
+        with open(bridge, "w", encoding="utf-8") as fh:
+            fh.write(NL.join(keep))
+        print("  ✓ بریج ۳.۴۴ (مخصوص ARM) از bridge.yml حذف شد")
+
     # ورک‌فلوهای بی‌ربط حذف می‌شوند تا هر پوش، ده‌ها بیلد راه نیندازد
     keep_files = {"kariya-windows.yml", "bridge.yml",
                   "third-party-RustDeskTempTopMostWindow.yml"}

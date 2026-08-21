@@ -27,6 +27,8 @@ ROOT = os.path.dirname(HERE)
 APP_NAME = "KariyaDesk"
 ID_SERVER = "desk.kariyahesab.com"
 PUB_KEY = "yQh7HGyWBw2sb6SvcKWdXDFgec+a+2oEDLg4QUWh9ic="
+API_SERVER = "https://desk.kariyahesab.com"
+APP_VERSION = "1.0.0"   # نسخه‌ی محصولِ خودمان، جدا از نسخه‌ی RustDesk
 
 NL = chr(10)
 
@@ -196,6 +198,35 @@ def main(target):
          "  static ThemeData darkTheme = ThemeData(" + NL +
          "    fontFamily: 'Kariya', // kariya-dark" + NL, "// kariya-dark"),
     ])
+
+    # ۸) به‌روزرسانی خودکار — سازوکار خودِ RustDesk را به سرور خودمان می‌چرخانیم
+    #    (کامل و تست‌شده است: دانلود، نصب بی‌صدا، و انتظار تا پایان نشست‌های فعال)
+    edit(os.path.join(target, "libs", "hbb_common", "src", "lib.rs"), [
+        ('const URL: &str = "https://api.rustdesk.com/version/latest";',
+         'const URL: &str = "%s/version/latest";' % API_SERVER, API_SERVER)])
+
+    # بدون این، چون نام برنامه عوض شده، RustDesk بررسی نسخه را خاموش می‌کند
+    edit(os.path.join(target, "src", "common.rs"), [
+        ("pub fn check_software_update() {" + NL +
+         "    if is_custom_client() {" + NL +
+         "        return;" + NL +
+         "    }" + NL,
+         "pub fn check_software_update() {" + NL +
+         "    // کاریا: نسخه‌ی برندشده هم باید به‌روزرسانی بگیرد" + NL,
+         "کاریا: نسخه‌ی برندشده")])
+
+    # به‌روزرسانی خودکار به‌صورت پیش‌فرض روشن باشد، مگر کاربر صریحاً خاموشش کند
+    edit(os.path.join(target, "src", "updater.rs"), [
+        ("    if !(manually || config::Config::get_bool_option("
+         "config::keys::OPTION_ALLOW_AUTO_UPDATE)) {" + NL,
+         "    // کاریا: پیش‌فرض روشن؛ فقط \"N\" صریح خاموشش می‌کند" + NL +
+         "    let auto_ok = config::Config::get_option("
+         "config::keys::OPTION_ALLOW_AUTO_UPDATE) != \"N\";" + NL +
+         "    if !(manually || auto_ok) {" + NL, "کاریا: پیش‌فرض روشن")])
+
+    # نسخه‌ی محصول خودمان؛ به‌روزرسانی‌های بعدی از همین‌جا جلو می‌روند
+    edit(os.path.join(target, "Cargo.toml"), [
+        ('version = "1.4.9"', 'version = "%s"' % APP_VERSION, 'version = "%s"' % APP_VERSION)])
 
     print(NL + "تمام شد؛ سورس آماده‌ی ساخت است.")
 

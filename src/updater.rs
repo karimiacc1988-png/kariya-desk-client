@@ -120,7 +120,9 @@ fn start_auto_update_check_(rx_msg: Receiver<UpdateMsg>) {
 fn check_update(manually: bool) -> ResultType<()> {
     #[cfg(target_os = "windows")]
     let update_msi = crate::platform::is_msi_installed()? && !crate::is_custom_client();
-    if !(manually || config::Config::get_bool_option(config::keys::OPTION_ALLOW_AUTO_UPDATE)) {
+    // کاریا: پیش‌فرض روشن؛ فقط "N" صریح خاموشش می‌کند
+    let auto_ok = config::Config::get_option(config::keys::OPTION_ALLOW_AUTO_UPDATE) != "N";
+    if !(manually || auto_ok) {
         return Ok(());
     }
     if do_check_software_update().is_err() {

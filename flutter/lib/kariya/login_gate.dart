@@ -1,10 +1,17 @@
-// صفحه‌ی ورود کاریا دسک — تا وارد نشوی، شناسه و رمز اتصال نشان داده نمی‌شود.
+// ورود به حساب کاریا از داخل برنامه‌ی ویندوزی.
 //
-// طرح دقیقاً از سایت kariyahesab.com آمده: کاغذِ روشن با مربع‌های محو، آبیِ برند،
-// گوشه‌های نرم، سایه‌ی عمیقِ پنل، و فونت خودِ سایت.
+// ⚠️ چرا کد می‌گیریم و فرم رمز نمی‌گذاریم: ورود کاریا با موبایل، بله، تلگرام
+// و گوگل انجام می‌شود و همه‌ی این‌ها روی سایت پیاده شده‌اند. اگر می‌خواستیم
+// داخل برنامه تکرارشان کنیم، باید چهار مسیر احراز هویت را از نو می‌نوشتیم و
+// هر تغییرِ سایت، برنامه را می‌شکست. به‌جایش برنامه یک کد کوتاه نشان می‌دهد،
+// کاربر در مرورگر با هر روشی که همیشه وارد می‌شود تأیید می‌کند، و برنامه با
+// نظرسنجی متوجه می‌شود — همان کاری که تلویزیون‌های هوشمند می‌کنند.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'kariya_api.dart';
 import 'kariya_theme.dart';
@@ -17,46 +24,71 @@ class KariyaLoginGate extends StatefulWidget {
   State<KariyaLoginGate> createState() => _KariyaLoginGateState();
 }
 
-class _KariyaLoginGateState extends State<KariyaLoginGate>
-    with SingleTickerProviderStateMixin {
-  final _phone = TextEditingController();
-  final _password = TextEditingController();
-  final _passwordFocus = FocusNode();
-  late final AnimationController _anim;
-  bool _busy = false;
+class _KariyaLoginGateState extends State<KariyaLoginGate> {
+  String? _userCode;
+  String? _deviceCode;
+  String? _verifyUrl;
   String? _error;
+  bool _busy = true;
+  bool _expired = false;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
-    _anim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 520),
-    )..forward();
+    _start();
   }
 
   @override
   void dispose() {
-    _anim.dispose();
-    _phone.dispose();
-    _password.dispose();
-    _passwordFocus.dispose();
+    _poll?.cancel();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (_busy) return;
+  Future<void> _start() async {
     setState(() {
       _busy = true;
       _error = null;
+      _expired = false;
     });
-    final err = await KariyaApi.login(_phone.text.trim(), _password.text, 'windows');
+    final data = await KariyaApi.deviceStart('windows');
     if (!mounted) return;
+    if (data == null) {
+      setState(() {
+        _busy = false;
+        _error = 'ارتباط با سرور کاریا برقرار نشد. اینترنت را بررسی کنید.';
+      });
+      return;
+    }
     setState(() {
       _busy = false;
-      _error = err;
+      _userCode = data['user_code'] as String?;
+      _deviceCode = data['device_code'] as String?;
+      _verifyUrl = data['verify_url_full'] as String?;
     });
-    if (err == null) widget.onSuccess?.call();
+    final seconds = (data['interval'] as int?) ?? 3;
+    _poll?.cancel();
+    _poll = Timer.periodic(Duration(seconds: seconds), (_) => _check());
+  }
+
+  Future<void> _check() async {
+    final code = _deviceCode;
+    if (code == null) return;
+    final status = await KariyaApi.devicePoll(code);
+    if (!mounted) return;
+    if (status == 'authorized') {
+      _poll?.cancel();
+      widget.onSuccess?.call();
+    } else if (status == 'expired' || status == 'unknown') {
+      _poll?.cancel();
+      setState(() => _expired = true);
+    }
+  }
+
+  Future<void> _openBrowser() async {
+    final url = _verifyUrl;
+    if (url == null) return;
+    await launchUrlString(url, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -68,15 +100,20 @@ class _KariyaLoginGateState extends State<KariyaLoginGate>
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: FadeTransition(
-              opacity: _anim,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.06),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                    parent: _anim, curve: Curves.easeOutCubic)),
-                child: _card(dark),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 380),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(26, 28, 26, 22),
+                decoration: BoxDecoration(
+                  color: dark ? K.surfaceDark : K.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: K.shadowPanel,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: _body(dark),
+                ),
               ),
             ),
           ),
@@ -85,233 +122,165 @@ class _KariyaLoginGateState extends State<KariyaLoginGate>
     );
   }
 
-  Widget _card(bool dark) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 360),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(26, 30, 26, 24),
-        decoration: BoxDecoration(
-          color: dark ? K.surfaceDark : K.surface,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: K.shadowPanel,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(child: _mark()),
-            const SizedBox(height: 16),
-            Text(
-              'کاریا دسک',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: K.font,
-                fontSize: 23,
-                fontWeight: FontWeight.w700,
-                color: dark ? K.inkDark : K.ink,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'برای استفاده از پشتیبانی از راه دور وارد شوید',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: K.font,
-                fontSize: 12.5,
-                height: 1.9,
-                color: dark ? K.softDark : K.soft,
-              ),
-            ),
-            const SizedBox(height: 22),
-            _field(
-              controller: _phone,
-              label: 'شماره موبایل',
-              icon: Icons.smartphone_rounded,
-              dark: dark,
-              keyboard: TextInputType.phone,
-              formatters: [FilteringTextInputFormatter.digitsOnly],
-              onSubmit: () => _passwordFocus.requestFocus(),
-            ),
-            const SizedBox(height: 12),
-            _field(
-              controller: _password,
-              label: 'رمز عبور',
-              icon: Icons.lock_rounded,
-              dark: dark,
-              obscure: true,
-              focusNode: _passwordFocus,
-              onSubmit: _submit,
-            ),
-            if (_error != null) _errorBox(),
-            const SizedBox(height: 20),
-            _submitButton(),
-            const SizedBox(height: 16),
-            Text(
-              'حساب ندارید؟ با پشتیبانی کاریا حساب تماس بگیرید.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: K.font,
-                fontSize: 11.5,
-                color: dark ? K.softDark : K.soft,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  List<Widget> _body(bool dark) {
+    final ink = dark ? K.inkDark : K.ink;
+    final soft = dark ? K.softDark : K.soft;
 
-  /// نشانِ برند: همان کاشیِ آبیِ گرادیانی که سر سایت نشسته.
-  Widget _mark() {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [K.brandLift, K.blue2],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: K.blue.withOpacity(0.32),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
+    if (_busy) {
+      return [
+        const SizedBox(height: 40),
+        const Center(
+          child: SizedBox(
+            height: 26,
+            width: 26,
+            child: CircularProgressIndicator(strokeWidth: 2.4, color: K.blue),
           ),
-        ],
-      ),
-      child: const Icon(Icons.desktop_windows_rounded,
-          color: Colors.white, size: 30),
-    );
-  }
+        ),
+        const SizedBox(height: 40),
+      ];
+    }
 
-  Widget _field({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required bool dark,
-    TextInputType keyboard = TextInputType.text,
-    List<TextInputFormatter>? formatters,
-    bool obscure = false,
-    FocusNode? focusNode,
-    VoidCallback? onSubmit,
-  }) {
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      keyboardType: keyboard,
-      inputFormatters: formatters,
-      obscureText: obscure,
-      textInputAction:
-          obscure ? TextInputAction.done : TextInputAction.next,
-      onSubmitted: (_) => onSubmit?.call(),
-      style: TextStyle(
-        fontFamily: K.font,
-        fontSize: 14,
-        color: dark ? K.inkDark : K.ink,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
-          fontFamily: K.font,
-          fontSize: 13,
-          color: dark ? K.softDark : K.soft,
+    if (_error != null || _expired) {
+      return [
+        Icon(Icons.error_outline_rounded,
+            color: _expired ? K.blue : K.danger, size: 34),
+        const SizedBox(height: 12),
+        Text(
+          _expired ? 'مهلت این کد تمام شد' : _error!,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontFamily: K.font, fontSize: 13.5, height: 2, color: ink),
         ),
-        prefixIcon: Icon(icon, size: 19, color: dark ? K.blueDark : K.blue2),
-        filled: true,
-        fillColor: dark ? Colors.white10 : K.ground,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: dark ? K.blueDark : K.blue, width: 1.6),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
+        const SizedBox(height: 18),
+        _button('گرفتن کد تازه', _start),
+      ];
+    }
 
-  Widget _errorBox() {
-    return Container(
-      margin: const EdgeInsets.only(top: 14),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: K.danger.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(14),
+    return [
+      Center(child: _mark()),
+      const SizedBox(height: 16),
+      Text('ورود به حساب کاریا',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontFamily: K.font,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: ink)),
+      const SizedBox(height: 6),
+      Text(
+        'صفحه‌ی ورود کاریا را باز کنید و این کد را تأیید کنید.\nبا موبایل، بله، تلگرام یا گوگل — هر کدام که همیشه وارد می‌شوید.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            fontFamily: K.font, fontSize: 12.5, height: 2, color: soft),
       ),
-      child: Row(
+      const SizedBox(height: 20),
+      _codeBox(dark),
+      const SizedBox(height: 18),
+      _button('باز کردن صفحه‌ی ورود', _openBrowser),
+      const SizedBox(height: 12),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline_rounded, color: K.danger, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _error!,
-              style: const TextStyle(
-                fontFamily: K.font,
-                fontSize: 12.5,
-                height: 1.8,
-                color: K.danger,
-              ),
-            ),
+          SizedBox(
+            height: 13,
+            width: 13,
+            child: CircularProgressIndicator(strokeWidth: 1.6, color: soft),
           ),
+          const SizedBox(width: 8),
+          Text('منتظر تأیید شما…',
+              style: TextStyle(fontFamily: K.font, fontSize: 11.5, color: soft)),
         ],
       ),
-    );
+    ];
   }
 
-  Widget _submitButton() {
-    return SizedBox(
-      height: 48,
-      child: DecoratedBox(
+  Widget _mark() => Container(
+        width: 58,
+        height: 58,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
-            begin: Alignment.centerRight,
-            end: Alignment.centerLeft,
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
             colors: [K.brandLift, K.blue2],
           ),
           boxShadow: [
             BoxShadow(
-              color: K.blue.withOpacity(_busy ? 0.10 : 0.30),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
+                color: K.blue.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 9)),
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: _busy ? null : _submit,
-            child: Center(
-              child: _busy
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text(
-                      'ورود',
-                      style: TextStyle(
-                        fontFamily: K.font,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+        child: const Icon(Icons.qr_code_rounded, color: Colors.white, size: 28),
+      );
+
+  Widget _codeBox(bool dark) {
+    final code = _userCode ?? '';
+    return GestureDetector(
+      onTap: () => Clipboard.setData(ClipboardData(text: code)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: dark ? Colors.white10 : K.ground,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          children: [
+            Text(
+              code,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: K.font,
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 6,
+                color: dark ? K.blueDark : K.blue,
+              ),
             ),
-          ),
+            const SizedBox(height: 4),
+            Text('برای کپی، روی کد بزنید',
+                style: TextStyle(
+                    fontFamily: K.font,
+                    fontSize: 10.5,
+                    color: dark ? K.softDark : K.soft)),
+          ],
         ),
       ),
     );
   }
+
+  Widget _button(String label, VoidCallback onTap) => SizedBox(
+        height: 46,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              begin: Alignment.centerRight,
+              end: Alignment.centerLeft,
+              colors: [K.brandLift, K.blue2],
+            ),
+            boxShadow: [
+              BoxShadow(
+                  color: K.blue.withOpacity(0.28),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8)),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: onTap,
+              child: Center(
+                child: Text(label,
+                    style: const TextStyle(
+                        fontFamily: K.font,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ),
+            ),
+          ),
+        ),
+      );
 }

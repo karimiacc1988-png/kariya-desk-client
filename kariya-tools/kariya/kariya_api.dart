@@ -119,8 +119,8 @@ class KariyaApi {
   }
 
   /// بنر فعال: {id, title, image, link} یا null اگر تبلیغی تعریف نشده باشد.
+  /// بنر بدون ورود هم می‌آید — مشتریِ بی‌حساب هم باید تبلیغ را ببیند.
   static Future<Map<String, dynamic>?> fetchAd() async {
-    if (token == null) return null;
     try {
       final res = await http
           .get(Uri.parse('$base/api/app/ad'), headers: _headers)
@@ -135,6 +135,50 @@ class KariyaApi {
       return map;
     } catch (_) {
       return null;
+    }
+  }
+
+  // ---- ورود با حساب کاریا (جریان کد دستگاه) ----
+  //
+  // برنامه‌ی دسکتاپ ورود با بله و تلگرام و گوگل را خودش ندارد؛ همه‌ی این‌ها
+  // روی سایت کاریا هست. پس کد کوتاهی می‌گیریم، کاربر در مرورگر تأیید می‌کند،
+  // و ما با نظرسنجی متوجه می‌شویم.
+
+  /// شروع: {user_code, verify_url_full, device_code, interval}
+  static Future<Map<String, dynamic>?> deviceStart(String device) async {
+    try {
+      final res = await http
+          .post(Uri.parse('$base/api/app/device/start'),
+              headers: {'Content-Type': 'application/json; charset=utf-8'},
+              body: jsonEncode({'device': device}))
+          .timeout(_timeout);
+      if (res.statusCode != 200) return null;
+      return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// وضعیت: pending | authorized | expired | unknown
+  static Future<String> devicePoll(String deviceCode) async {
+    try {
+      final res = await http
+          .post(Uri.parse('$base/api/app/device/poll'),
+              headers: {'Content-Type': 'application/json; charset=utf-8'},
+              body: jsonEncode({'device_code': deviceCode}))
+          .timeout(_timeout);
+      final body = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      final status = (body['status'] ?? 'pending') as String;
+      if (status == 'authorized') {
+        token = body['token'] as String?;
+        userName = (body['name'] ?? '') as String;
+        userPhone = (body['phone'] ?? '') as String;
+        await _save();
+        loggedIn.value = true;
+      }
+      return status;
+    } catch (_) {
+      return 'pending';
     }
   }
 

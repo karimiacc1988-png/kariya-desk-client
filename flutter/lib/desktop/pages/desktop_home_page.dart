@@ -26,12 +26,10 @@ import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import '../widgets/button.dart';
 // --- کاریا دسک ---
+import 'package:flutter_hbb/kariya/kariya_theme.dart';
 import 'package:flutter_hbb/kariya/kariya_api.dart';
 import 'package:flutter_hbb/kariya/login_gate.dart';
 import 'package:flutter_hbb/kariya/ad_banner.dart';
-// --- کاریا دسک ---
-import 'package:flutter_hbb/kariya/kariya_theme.dart';
-// --- کاریا دسک ---
 import 'package:flutter_hbb/kariya/account_strip.dart';
 
 class DesktopHomePage extends StatefulWidget {
@@ -89,19 +87,12 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         block: _block, mask: true, use: canBeBlocked, child: child);
   }
 
-  Widget buildLeftPane(BuildContext context) =>
-      KariyaWeave(child: _kariyaLeftPane(context));
-
-  Widget _kariyaLeftPane(BuildContext context) {
+  Widget buildLeftPane(BuildContext context) {
     final isIncomingOnly = bind.isIncomingOnly();
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
-      if (bind.isCustomClient())
-        Align(
-          alignment: Alignment.center,
-          child: loadPowered(context),
-        ),
+      // کاریا: برچسب Powered by برداشته شد.
       Align(
         alignment: Alignment.center,
         child: loadLogo(),
@@ -150,7 +141,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       value: gFFI.serverModel,
       child: Container(
         width: isIncomingOnly ? 280.0 : 200.0,
-        color: Colors.transparent,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF101B2E)
+            : const Color(0xFFF2F6FD),
         child: Stack(
           children: [
             Column(
@@ -199,11 +192,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   buildRightPane(BuildContext context) {
-    return KariyaWeave(
-      child: Container(
-        color: Colors.transparent,
-        child: ConnectionPage(),
-      ),
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: ConnectionPage(),
     );
   }
 

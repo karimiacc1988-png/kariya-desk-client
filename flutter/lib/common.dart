@@ -1409,6 +1409,8 @@ void msgBoxCommon(OverlayDialogManager dialogManager, String title,
 }
 
 Color str2color(String str, [alpha = 0xFF]) {
+  // کاریا: به‌جای رنگِ تصادفیِ هر دستگاه، یک آبیِ ملایمِ برند.
+  return Color((alpha << 24) | 0x16449B);
   var hash = 160 << 16 + 114 << 8 + 91;
   for (var i = 0; i < str.length; i += 1) {
     hash = str.codeUnitAt(i) + ((hash << 5) - hash);

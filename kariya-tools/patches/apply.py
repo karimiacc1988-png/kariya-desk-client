@@ -246,21 +246,20 @@ def main(target):
     ])
 
     # ۱۰) چیدمان پنجره‌ی اصلی با زبان بصری کاریا
-    #     همه‌ی پیچیدن‌ها به‌شکل «تابعِ روکش + تابع اصلی» انجام می‌شود تا هیچ
-    #     پرانتزی دستکاری نشود و با نسخه‌های بعدی RustDesk هم نشکند.
+    #
+    # ⚠️ **کاغذِ مربع‌دار عمداً فقط در صفحه‌ی ورود است.** نسخه‌ی اول آن را پشت
+    # ستون دستگاه‌ها و صفحه‌ی اتصال هم گذاشت و نتیجه این شد که کاربر فکر
+    # می‌کرد صفحه هنوز بارگذاری نشده — خطوط پشتِ کارت‌های رنگی شبیه اسکلتِ
+    # لود می‌شدند. پس اینجا فقط رنگ و کارت و فونت می‌ماند، بدون خط‌کشی.
     edit(home, [
-        # ستون شناسه و رمز روی کاغذِ مربع‌دار کاریا می‌نشیند
-        ("  Widget buildLeftPane(BuildContext context) {" + NL,
-         "  Widget buildLeftPane(BuildContext context) =>" + NL +
-         "      KariyaWeave(child: _kariyaLeftPane(context));" + NL + NL +
-         "  Widget _kariyaLeftPane(BuildContext context) {" + NL,
-         "_kariyaLeftPane"),
-        # پس‌زمینه‌ی خودِ ستون شفاف شود تا مربع‌ها دیده شوند
+        # ستون شناسه/رمز: کاغذِ ساده‌ی کاریا، بدون خط‌کشی
         ("        width: isIncomingOnly ? 280.0 : 200.0," + NL +
          "        color: Theme.of(context).colorScheme.background,",
          "        width: isIncomingOnly ? 280.0 : 200.0," + NL +
-         "        color: Colors.transparent,",
-         "        color: Colors.transparent,"),
+         "        color: Theme.of(context).brightness == Brightness.dark" + NL +
+         "            ? const Color(0xFF101B2E)" + NL +
+         "            : const Color(0xFFF2F6FD),",
+         "0xFFF2F6FD"),
         # کادر شناسه و کادر رمز، هرکدام یک کارت کاریا
         ("  buildIDBoard(BuildContext context) {" + NL,
          "  buildIDBoard(BuildContext context) =>" + NL +
@@ -272,22 +271,25 @@ def main(target):
          "      KariyaCard(child: _kariyaPasswordBoard(context));" + NL + NL +
          "  _kariyaPasswordBoard(BuildContext context) {" + NL,
          "_kariyaPasswordBoard"),
-        # ستون راست (صفحه‌ی اتصال) هم همان کاغذ را می‌گیرد
-        ("  buildRightPane(BuildContext context) {" + NL +
-         "    return Container(" + NL +
-         "      color: Theme.of(context).scaffoldBackgroundColor," + NL +
-         "      child: ConnectionPage()," + NL +
-         "    );" + NL +
-         "  }",
-         "  buildRightPane(BuildContext context) {" + NL +
-         "    return KariyaWeave(" + NL +
-         "      child: Container(" + NL +
-         "        color: Colors.transparent," + NL +
-         "        child: ConnectionPage()," + NL +
-         "      )," + NL +
-         "    );" + NL +
-         "  }",
-         'KariyaWeave(' + NL + '      child: Container('),
+        # 🔴 «Powered by RustDesk» بالای ستون: با عوض شدن نام برنامه، خودِ
+        # RustDesk این برچسب را روشن می‌کند. برای نسخه‌ی برندشده باید برود.
+        ("      if (bind.isCustomClient())" + NL +
+         "        Align(" + NL +
+         "          alignment: Alignment.center," + NL +
+         "          child: loadPowered(context)," + NL +
+         "        ),",
+         "      // کاریا: برچسب Powered by برداشته شد.",
+         "کاریا: برچسب Powered by"),
+    ])
+
+    # کارت‌های دستگاه‌ها: RustDesk برای هر دستگاه یک رنگِ تصادفی می‌سازد و
+    # نتیجه‌اش شبیه رنگین‌کمان می‌شود. یک آبیِ ملایمِ برند به‌جای همه‌شان.
+    edit(common, [
+        ("Color str2color(String str, [alpha = 0xFF]) {",
+         "Color str2color(String str, [alpha = 0xFF]) {" + NL +
+         "  // کاریا: به‌جای رنگِ تصادفیِ هر دستگاه، یک آبیِ ملایمِ برند." + NL +
+         "  return Color((alpha << 24) | 0x16449B);",
+         "کاریا: به‌جای رنگِ تصادفیِ هر دستگاه"),
     ])
 
     # ۱۱) برند: نام و آیکون در همه‌ی جاهایی که ویندوز و برنامه نشان می‌دهند

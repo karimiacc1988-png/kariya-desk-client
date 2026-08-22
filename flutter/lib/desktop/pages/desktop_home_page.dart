@@ -105,8 +105,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       if (!isOutgoingOnly) buildPasswordBoard(context),
       const KariyaProductsButton(),
       const KariyaAdBanner(),
-      const KariyaProductsButton(),
-      const KariyaAdBanner(),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),

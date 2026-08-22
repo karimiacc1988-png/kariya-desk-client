@@ -145,14 +145,14 @@ fn check_update(manually: bool) -> ResultType<()> {
                 );
             };
             format!(
-                "{}/rustdesk-{}-{}.{}",
+                "{}/KariyaDesk-{}-{}.{}",
                 download_url,
                 version,
                 arch,
                 if update_msi { "msi" } else { "exe" }
             )
         } else {
-            format!("{}/rustdesk-{}-x86-sciter.exe", download_url, version)
+            format!("{}/KariyaDesk-{}-x86-sciter.exe", download_url, version)
         };
         log::debug!("New version available: {}", &version);
         let client = create_http_client_with_url(&download_url);

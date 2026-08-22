@@ -29,6 +29,8 @@ import '../widgets/button.dart';
 import 'package:flutter_hbb/kariya/kariya_api.dart';
 import 'package:flutter_hbb/kariya/login_gate.dart';
 import 'package:flutter_hbb/kariya/ad_banner.dart';
+// --- کاریا دسک ---
+import 'package:flutter_hbb/kariya/kariya_theme.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);

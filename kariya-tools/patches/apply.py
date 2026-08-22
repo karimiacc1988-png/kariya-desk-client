@@ -125,6 +125,7 @@ def main(target):
     home = os.path.join(target, "flutter", "lib", "desktop", "pages",
                         "desktop_home_page.dart")
     add_imports(home, [
+        "import 'package:flutter_hbb/kariya/kariya_theme.dart';",
         "import 'package:flutter_hbb/kariya/kariya_api.dart';",
         "import 'package:flutter_hbb/kariya/login_gate.dart';",
         "import 'package:flutter_hbb/kariya/ad_banner.dart';",
@@ -226,7 +227,25 @@ def main(target):
 
     # نسخه‌ی محصول خودمان؛ به‌روزرسانی‌های بعدی از همین‌جا جلو می‌روند
     edit(os.path.join(target, "Cargo.toml"), [
-        ('version = "1.4.9"', 'version = "%s"' % APP_VERSION, 'version = "%s"' % APP_VERSION)])
+        ('version = "1.4.9"', 'version = "%s"' % APP_VERSION,
+         'version = "%s"' % APP_VERSION)])
+    # ⚠️ بیلد با `cargo build --locked` اجرا می‌شود: اگر نسخه در Cargo.toml عوض
+    # شود ولی در Cargo.lock نه، کارگو کل بیلد را رد می‌کند.
+    edit(os.path.join(target, "Cargo.lock"), [
+        ('name = "rustdesk"' + NL + 'version = "1.4.9"',
+         'name = "rustdesk"' + NL + 'version = "%s"' % APP_VERSION,
+         'name = "rustdesk"' + NL + 'version = "%s"' % APP_VERSION)])
+
+    # ۹) رنگ تأکید کل برنامه: آبیِ کاریا به‌جای آبیِ RustDesk
+    #    (دکمه‌ها، سوییچ‌ها، هایلایت‌ها و همه‌ی جاهایی که MyTheme.accent را می‌خوانند)
+    edit(common, [
+        ("static const Color accent = Color(0xFF0071FF);",
+         "static const Color accent = Color(0xFF16449B); // کاریا", "0xFF16449B"),
+        ("static const Color accent50 = Color(0x770071FF);",
+         "static const Color accent50 = Color(0x7716449B);", "0x7716449B"),
+        ("static const Color accent80 = Color(0xAA0071FF);",
+         "static const Color accent80 = Color(0xAA16449B);", "0xAA16449B"),
+    ])
 
     print(NL + "تمام شد؛ سورس آماده‌ی ساخت است.")
 

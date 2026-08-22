@@ -247,6 +247,51 @@ def main(target):
          "static const Color accent80 = Color(0xAA16449B);", "0xAA16449B"),
     ])
 
+    # ۱۰) چیدمان پنجره‌ی اصلی با زبان بصری کاریا
+    #     همه‌ی پیچیدن‌ها به‌شکل «تابعِ روکش + تابع اصلی» انجام می‌شود تا هیچ
+    #     پرانتزی دستکاری نشود و با نسخه‌های بعدی RustDesk هم نشکند.
+    edit(home, [
+        # ستون شناسه و رمز روی کاغذِ مربع‌دار کاریا می‌نشیند
+        ("  Widget buildLeftPane(BuildContext context) {" + NL,
+         "  Widget buildLeftPane(BuildContext context) =>" + NL +
+         "      KariyaWeave(child: _kariyaLeftPane(context));" + NL + NL +
+         "  Widget _kariyaLeftPane(BuildContext context) {" + NL,
+         "_kariyaLeftPane"),
+        # پس‌زمینه‌ی خودِ ستون شفاف شود تا مربع‌ها دیده شوند
+        ("        width: isIncomingOnly ? 280.0 : 200.0," + NL +
+         "        color: Theme.of(context).colorScheme.background,",
+         "        width: isIncomingOnly ? 280.0 : 200.0," + NL +
+         "        color: Colors.transparent,",
+         "        color: Colors.transparent,"),
+        # کادر شناسه و کادر رمز، هرکدام یک کارت کاریا
+        ("  buildIDBoard(BuildContext context) {" + NL,
+         "  buildIDBoard(BuildContext context) =>" + NL +
+         "      KariyaCard(child: _kariyaIDBoard(context));" + NL + NL +
+         "  _kariyaIDBoard(BuildContext context) {" + NL,
+         "_kariyaIDBoard"),
+        ("  buildPasswordBoard(BuildContext context) {" + NL,
+         "  buildPasswordBoard(BuildContext context) =>" + NL +
+         "      KariyaCard(child: _kariyaPasswordBoard(context));" + NL + NL +
+         "  _kariyaPasswordBoard(BuildContext context) {" + NL,
+         "_kariyaPasswordBoard"),
+        # ستون راست (صفحه‌ی اتصال) هم همان کاغذ را می‌گیرد
+        ("  buildRightPane(BuildContext context) {" + NL +
+         "    return Container(" + NL +
+         "      color: Theme.of(context).scaffoldBackgroundColor," + NL +
+         "      child: ConnectionPage()," + NL +
+         "    );" + NL +
+         "  }",
+         "  buildRightPane(BuildContext context) {" + NL +
+         "    return KariyaWeave(" + NL +
+         "      child: Container(" + NL +
+         "        color: Colors.transparent," + NL +
+         "        child: ConnectionPage()," + NL +
+         "      )," + NL +
+         "    );" + NL +
+         "  }",
+         'KariyaWeave(' + NL + '      child: Container('),
+    ])
+
     print(NL + "تمام شد؛ سورس آماده‌ی ساخت است.")
 
 

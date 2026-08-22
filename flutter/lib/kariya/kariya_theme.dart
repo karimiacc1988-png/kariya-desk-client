@@ -114,3 +114,26 @@ class _WeavePainter extends CustomPainter {
   bool shouldRepaint(covariant _WeavePainter old) =>
       old.rule != rule || old.cell != cell || old.ground != ground;
 }
+
+
+/// کارتِ کاریا: سطح سفید با گوشه‌ی نرم و سایه‌ی ملایم — همان کارت‌های سایت.
+/// دور کادرهای شناسه و رمزِ RustDesk می‌پیچد تا ستون اصلی هم زبان بصری ما را بگیرد.
+class KariyaCard extends StatelessWidget {
+  final Widget child;
+  const KariyaCard({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = K.isDark(context);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: dark ? K.surfaceDark.withOpacity(0.92) : K.surface.withOpacity(0.94),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: K.shadowSoft,
+      ),
+      child: child,
+    );
+  }
+}

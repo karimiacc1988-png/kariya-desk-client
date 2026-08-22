@@ -92,7 +92,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         block: _block, mask: true, use: canBeBlocked, child: child);
   }
 
-  Widget buildLeftPane(BuildContext context) {
+  Widget buildLeftPane(BuildContext context) =>
+      KariyaWeave(child: _kariyaLeftPane(context));
+
+  Widget _kariyaLeftPane(BuildContext context) {
     final isIncomingOnly = bind.isIncomingOnly();
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
@@ -149,7 +152,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       value: gFFI.serverModel,
       child: Container(
         width: isIncomingOnly ? 280.0 : 200.0,
-        color: Theme.of(context).colorScheme.background,
+        color: Colors.transparent,
         child: Stack(
           children: [
             Column(
@@ -198,13 +201,18 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   buildRightPane(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: ConnectionPage(),
+    return KariyaWeave(
+      child: Container(
+        color: Colors.transparent,
+        child: ConnectionPage(),
+      ),
     );
   }
 
-  buildIDBoard(BuildContext context) {
+  buildIDBoard(BuildContext context) =>
+      KariyaCard(child: _kariyaIDBoard(context));
+
+  _kariyaIDBoard(BuildContext context) {
     final model = gFFI.serverModel;
     return Container(
       margin: const EdgeInsets.only(left: 20, right: 11),
@@ -297,7 +305,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     );
   }
 
-  buildPasswordBoard(BuildContext context) {
+  buildPasswordBoard(BuildContext context) =>
+      KariyaCard(child: _kariyaPasswordBoard(context));
+
+  _kariyaPasswordBoard(BuildContext context) {
     return ChangeNotifierProvider.value(
         value: gFFI.serverModel,
         child: Consumer<ServerModel>(

@@ -531,7 +531,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
               ? (context, child) => AccessibilityListener(
                     child: MediaQuery(
                       data: MediaQuery.of(context).copyWith(
-                        textScaler: TextScaler.linear(0.92),  // کاریا: قلمِ ریزتر
+                        textScaler: TextScaler.linear(1.0),
                       ),
                       child: child ?? Container(),
                     ),
@@ -543,11 +543,13 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                       isWebDesktop) {
                     child = keyListenerBuilder(context, child);
                   }
-                  if (isLinux) {
-                    return buildVirtualWindowFrame(context, child);
-                  } else {
-                    return workaroundWindowBorder(context, child);
-                  }
+                  // کاریا: پنجره‌ی اصلی راست‌چین
+                  final framed = isLinux
+                      ? buildVirtualWindowFrame(context, child)
+                      : workaroundWindowBorder(context, child);
+                  return Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: framed);
                 },
         ),
       );
@@ -558,7 +560,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 Widget _keepScaleBuilder(BuildContext context, Widget? child) {
   return MediaQuery(
     data: MediaQuery.of(context).copyWith(
-      textScaler: TextScaler.linear(1.0),
+      textScaler: TextScaler.linear(0.92),  // کاریا: قلمِ ریزتر
     ),
     child: child ?? Container(),
   );

@@ -103,7 +103,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
-      const KariyaAccountStrip(),
       const KariyaProductsButton(),
       const KariyaAdBanner(),
       FutureBuilder<Widget>(

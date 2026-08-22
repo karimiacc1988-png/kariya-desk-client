@@ -148,7 +148,6 @@ def main(target):
         "    final isIncomingOnly = bind.isIncomingOnly();" + NL)
     banner_old = "      if (!isOutgoingOnly) buildPasswordBoard(context),"
     banner_new = (banner_old + NL +
-                  "      const KariyaAccountStrip()," + NL +
                   "      const KariyaProductsButton()," + NL +
                   "      const KariyaAdBanner(),")
     edit(home, [(gate_old, gate_new, "ورود اختیاری است"),
@@ -426,6 +425,59 @@ def main(target):
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(text.replace(old, new))
         print("  ✓ %s" % rel)
+
+    # ۱۴) سه ایراد دیگری که مالک روی نسخه‌ی نصب‌شده دید
+    #
+    # ⚠️ کادر شناسه‌ی مقصد باید سفیدِ مات باشد: بدون زمینه، خط‌های پس‌زمینه از
+    #    داخلش رد می‌شدند و کادر «کثیف» دیده می‌شد.
+    edit(os.path.join(target, "flutter", "lib", "desktop", "pages",
+                      "connection_page.dart"), [
+        ("      decoration: BoxDecoration(" + NL +
+         "          borderRadius: const BorderRadius.all(Radius.circular(13))," + NL +
+         "          border: Border.all(color: Theme.of(context).colorScheme.background)),",
+         "      decoration: BoxDecoration(" + NL +
+         "          color: Theme.of(context).brightness == Brightness.dark" + NL +
+         "              ? const Color(0xFF16223A)" + NL +
+         "              : Colors.white," + NL +
+         "          borderRadius: const BorderRadius.all(Radius.circular(16))," + NL +
+         "          boxShadow: const [" + NL +
+         "            BoxShadow(color: Color(0x1410285A), blurRadius: 18," + NL +
+         "                offset: Offset(0, 6))," + NL +
+         "          ]),",
+         "کادر سفیدِ کاریا" if False else "color: Theme.of(context).brightness == Brightness.dark"),
+    ])
+
+    # 🔴 ورود، جایی که کاربر انتظارش را دارد: همان دکمه‌ی «ورود» در تب دفترچه،
+    #    نه یک نوار در ستون کناری. مالک صریح گفت جای قبلی «اصلاً خوب نیست».
+    ab = os.path.join(target, "flutter", "lib", "common", "widgets",
+                      "address_book.dart")
+    add_imports(ab, ["import 'package:flutter_hbb/kariya/login_gate.dart';"])
+    edit(ab, [
+        ("        if (!gFFI.userModel.isLogin) {" + NL +
+         "          return Center(" + NL +
+         "              child: ElevatedButton(" + NL +
+         "                  onPressed: loginDialog, child: Text(translate(\"Login\"))));",
+         "        if (!gFFI.userModel.isLogin) {" + NL +
+         "          // کاریا: ورود با حساب کاریا، نه حساب RustDesk." + NL +
+         "          return const KariyaLoginGate();",
+         "کاریا: ورود با حساب کاریا"),
+    ])
+
+    # ⚠️ برنامه باید راست‌چین باشد؛ فارسی‌بودن متن‌ها کافی نیست، چیدمان هم
+    #    باید برگردد: ستون کاربری سمت راست بنشیند.
+    edit(os.path.join(target, "flutter", "lib", "main.dart"), [
+        ("      builder: (context, child) {" + NL +
+         "        child = _keepScaleBuilder(context, child);" + NL +
+         "        child = botToastBuilder(context, child);" + NL +
+         "        return child;",
+         "      builder: (context, child) {" + NL +
+         "        child = _keepScaleBuilder(context, child);" + NL +
+         "        child = botToastBuilder(context, child);" + NL +
+         "        // کاریا: کل برنامه راست‌چین" + NL +
+         "        return Directionality(" + NL +
+         "            textDirection: TextDirection.rtl, child: child);",
+         "کاریا: کل برنامه راست‌چین"),
+    ])
 
     print(NL + "تمام شد؛ سورس آماده‌ی ساخت است.")
 

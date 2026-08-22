@@ -65,9 +65,11 @@ class KariyaWeave extends StatelessWidget {
       ),
       child: CustomPaint(
         painter: _WeavePainter(
+          // ⚠️ خیلی کم‌رنگ، در حد کاغذِ مهندسی: نسخه‌ی اول ۰.۱۶ بود و مالک
+          // گفت «خیلی پررنگ است». خط باید حس بدهد، نه دیده شود.
           rule: dark
-              ? const Color(0xFF8FB3F5).withOpacity(0.15)
-              : const Color(0xFF16449B).withOpacity(0.16),
+              ? const Color(0xFF8FB3F5).withOpacity(0.055)
+              : const Color(0xFF16449B).withOpacity(0.045),
           ground: dark ? K.groundDark : K.ground,
           cell: 34,
         ),
@@ -100,14 +102,7 @@ class _WeavePainter extends CustomPainter {
 
     // وسط صفحه با رنگِ خودِ کاغذ محو می‌شود تا خط‌ها پشت متن ننشینند — همان
     // کاری که ماسکِ سایت با ستون محتوا می‌کند، ولی ساده‌تر: یک هاله‌ی هم‌رنگ.
-    final radius = size.shortestSide * 0.62;
-    final fade = Paint()
-      ..shader = RadialGradient(
-        colors: [ground.withOpacity(0.92), ground.withOpacity(0.0)],
-      ).createShader(
-        Rect.fromCircle(center: size.center(Offset.zero), radius: radius),
-      );
-    canvas.drawRect(Offset.zero & size, fade);
+    // در این شدت، دیگر به محوکردنِ مرکز نیازی نیست؛ خط‌ها خودشان پس‌زمینه‌اند.
   }
 
   @override

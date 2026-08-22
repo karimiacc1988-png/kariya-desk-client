@@ -387,7 +387,9 @@ void _runApp(
       builder: (context, child) {
         child = _keepScaleBuilder(context, child);
         child = botToastBuilder(context, child);
-        return child;
+        // کاریا: کل برنامه راست‌چین
+        return Directionality(
+            textDirection: TextDirection.rtl, child: child);
       },
     ),
   ));

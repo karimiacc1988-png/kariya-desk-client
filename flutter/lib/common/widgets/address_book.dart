@@ -21,6 +21,8 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import '../../common.dart';
 import 'dialog.dart';
 import 'login.dart';
+// --- کاریا دسک ---
+import 'package:flutter_hbb/kariya/login_gate.dart';
 
 final hideAbTagsPanel = false.obs;
 
@@ -40,9 +42,8 @@ class _AddressBookState extends State<AddressBook> {
   @override
   Widget build(BuildContext context) => Obx(() {
         if (!gFFI.userModel.isLogin) {
-          return Center(
-              child: ElevatedButton(
-                  onPressed: loginDialog, child: Text(translate("Login"))));
+          // کاریا: ورود با حساب کاریا، نه حساب RustDesk.
+          return const KariyaLoginGate();
         } else if (gFFI.userModel.networkError.isNotEmpty) {
           return netWorkErrorWidget();
         } else {

@@ -74,6 +74,8 @@ def main(target):
     for name in KEEP_JOBS:
         a, b = jobs[name]
         block = drop_arm(NL.join(lines[a:b]).rstrip() + NL)
+        if name == "build-for-windows-flutter":
+            block = use_artifact_instead_of_release(block)
         out.append(block)
 
     dst = os.path.join(target, ".github", "workflows", "kariya-windows.yml")
@@ -117,6 +119,38 @@ def main(target):
 
 
 ARM_MARKERS = ("aarch64", "windows-11-arm", "ARM64")
+
+
+def use_artifact_instead_of_release(block):
+    """
+    گام آخرِ بالادست فایل نصب را روی «ریلیز» گیت‌هاب می‌گذارد که برای مخزن ما
+    نه لازم است نه اجازه‌اش را دارد — و کل بیلد را در آخرین قدم می‌انداخت.
+    به‌جایش همان فایل‌ها را به‌عنوان آرتیفکت بالا می‌دهیم تا بشود برداشت.
+    """
+    lines = block.split(NL)
+    out, skip = [], False
+    for ln in lines:
+        if ln.strip() == "- name: Publish Release":
+            out.extend([
+                "      - name: Upload installer",
+                "        uses: actions/upload-artifact@v4",
+                "        if: env.UPLOAD_ARTIFACT == 'true'",
+                "        with:",
+                "          name: kariyadesk-installer",
+                "          path: |",
+                "            ./SignOutput/*.msi",
+                "            ./SignOutput/*.exe",
+            ])
+            skip = True
+            continue
+        if skip:
+            # تا شروع گام بعدی یا پایان بلوک رد می‌شویم
+            if ln.strip().startswith("- name:") or (ln.strip() and not ln.startswith("        ")):
+                skip = False
+                out.append(ln)
+            continue
+        out.append(ln)
+    return NL.join(out)
 
 
 def drop_arm(block):

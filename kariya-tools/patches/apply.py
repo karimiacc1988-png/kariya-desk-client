@@ -28,7 +28,8 @@ APP_NAME = "KariyaDesk"
 ID_SERVER = "desk.kariyahesab.com"
 PUB_KEY = "yQh7HGyWBw2sb6SvcKWdXDFgec+a+2oEDLg4QUWh9ic="
 API_SERVER = "https://desk.kariyahesab.com"
-APP_VERSION = "1.0.0"   # نسخه‌ی محصولِ خودمان، جدا از نسخه‌ی RustDesk
+APP_VERSION = "1.0.0"
+LIB_NAME = "kariyadesk"   # نام کتابخانه‌ی کنار برنامه، به‌جای librustdesk   # نسخه‌ی محصولِ خودمان، جدا از نسخه‌ی RustDesk
 
 NL = chr(10)
 
@@ -355,6 +356,76 @@ def main(target):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             shutil.copy2(src, dst)
     print("  ✓ آیکون و لوگوی کاریا جای آیکون‌های RustDesk نشست")
+
+    # ۱۲) هیچ ردی از RustDesk نماند — خواسته‌ی صریح مالک
+    #
+    # ⚠️ متن‌های ترجمه‌شده خودشان درست می‌شوند: خودِ RustDesk در lang.rs هر
+    # «RustDesk» را با نام برنامه عوض می‌کند، و نام ما KariyaDesk است. آنچه
+    # می‌ماند نشانی‌های سایت است که در دکمه‌ها و لینک‌ها به چشم می‌آید.
+    replaced = 0
+    for base, _dirs, files in os.walk(os.path.join(target, "flutter", "lib")):
+        for name in files:
+            if not name.endswith(".dart"):
+                continue
+            path = os.path.join(base, name)
+            with open(path, encoding="utf-8") as fh:
+                text = fh.read()
+            if "rustdesk.com" not in text:
+                continue
+            new = text
+            for old_url, new_url in (
+                ("https://rustdesk.com/download", "%s/download/" % API_SERVER),
+                ("https://rustdesk.com/pricing", "https://kariyahesab.com"),
+                ("https://rustdesk.com/privacy.html", "https://kariyahesab.com"),
+                ("https://rustdesk.com/docs/en/self-host/", "https://kariyahesab.com"),
+                ("https://rustdesk.com/", "https://kariyahesab.com/"),
+                ("https://rustdesk.com", "https://kariyahesab.com"),
+                ("rustdesk.com", "kariyahesab.com"),
+            ):
+                new = new.replace(old_url, new_url)
+            if new != text:
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.write(new)
+                replaced += 1
+    print("  ✓ نشانی‌های rustdesk.com در %d فایل به کاریا تغییر کرد" % replaced)
+
+    # ۱۳) آخرین ردها: عنوان نوار پنجره و نام کتابخانه‌ی کنارِ برنامه
+    #
+    # 🔴 مالک گفت «هیچ ردی از RustDesk نباید باشد». دو مورد مانده بود:
+    #   - نوشته‌ی ثابتِ "RustDesk" کنارِ لوگو در نوار بالای پنجره
+    #   - فایل librustdesk.dll که کنار برنامه نصب می‌شود و در پوشه دیده می‌شود
+    edit(os.path.join(target, "flutter", "lib", "desktop", "widgets",
+                      "tabbar_widget.dart"), [
+        ('                              "RustDesk",',
+         '                              "کاریا دسک",', '"کاریا دسک",')])
+
+    lib_renames = [
+        (os.path.join("Cargo.toml"), 'name = "librustdesk"', 'name = "%s"' % LIB_NAME),
+        (os.path.join("flutter", "windows", "CMakeLists.txt"),
+         "librustdesk.dll", "%s.dll" % LIB_NAME),
+        (os.path.join("flutter", "windows", "runner", "main.cpp"),
+         'LoadLibraryA("librustdesk.dll")', 'LoadLibraryA("%s.dll")' % LIB_NAME),
+        (os.path.join("flutter", "lib", "models", "native_model.dart"),
+         "librustdesk.dll", "%s.dll" % LIB_NAME),
+        (os.path.join("build.py"), "target/release/librustdesk.dll",
+         "target/release/%s.dll" % LIB_NAME),
+        (os.path.join("examples", "ipc.rs"), "use librustdesk::",
+         "use %s::" % LIB_NAME),
+    ]
+    for rel, old, new in lib_renames:
+        path = os.path.join(target, rel)
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        if new in text and old not in text:
+            continue
+        if old not in text:
+            print("  - نبود، رد شد: %s" % rel)
+            continue
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text.replace(old, new))
+        print("  ✓ %s" % rel)
 
     print(NL + "تمام شد؛ سورس آماده‌ی ساخت است.")
 

@@ -27,11 +27,10 @@ class KariyaBrandHeader extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            padding: const EdgeInsets.all(3),
+            // ⚠️ نه قاب، نه زمینه، نه گوشه‌ی گرد: خودِ فایل لوگو قاب آبی و
+            // زمینه‌ی آبیِ کمرنگ دارد. اگر اینجا هم قاب بگذاریم، دو خط
+            // می‌شود — ایرادی که مالک گرفت.
             decoration: BoxDecoration(
-              color: const Color(0xFFD6E4F7),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: K.blue, width: 1.4),
               boxShadow: [
                 BoxShadow(
                   color: K.blue.withOpacity(0.16),

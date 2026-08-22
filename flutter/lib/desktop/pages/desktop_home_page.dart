@@ -210,7 +210,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   _kariyaIDBoard(BuildContext context) {
     final model = gFFI.serverModel;
     return Container(
-      margin: const EdgeInsets.only(left: 20, right: 11),
+      margin: const EdgeInsetsDirectional.only(start: 20, end: 11),
       height: 57,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -222,7 +222,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           ).marginOnly(top: 5),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(left: 7),
+              padding: const EdgeInsetsDirectional.only(start: 7),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -320,7 +320,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final showOneTime = model.approveMode != 'click' &&
         model.verificationMethod != kUsePermanentPassword;
     return Container(
-      margin: EdgeInsets.only(left: 20.0, right: 16, top: 13, bottom: 13),
+      margin: const EdgeInsetsDirectional.only(
+          start: 20, end: 16, top: 13, bottom: 13),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
@@ -332,7 +333,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(left: 7),
+              padding: const EdgeInsetsDirectional.only(start: 7),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -68,8 +68,8 @@ class KariyaWeave extends StatelessWidget {
           // ⚠️ خیلی کم‌رنگ، در حد کاغذِ مهندسی: نسخه‌ی اول ۰.۱۶ بود و مالک
           // گفت «خیلی پررنگ است». خط باید حس بدهد، نه دیده شود.
           rule: dark
-              ? const Color(0xFF8FB3F5).withOpacity(0.055)
-              : const Color(0xFF16449B).withOpacity(0.045),
+              ? const Color(0xFF8FB3F5).withOpacity(0.035)
+              : const Color(0xFF16449B).withOpacity(0.022),
           ground: dark ? K.groundDark : K.ground,
           cell: 34,
         ),

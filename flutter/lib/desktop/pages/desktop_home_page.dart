@@ -105,6 +105,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       if (!isOutgoingOnly) buildPasswordBoard(context),
       const KariyaProductsButton(),
       const KariyaAdBanner(),
+      const KariyaProductsButton(),
+      const KariyaAdBanner(),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -147,7 +149,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         width: isIncomingOnly ? 280.0 : 200.0,
         color: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF101B2E)
-            : Colors.white,
+            : const Color(0xFFEDF3FD),  // کاریا: آبیِ کمرنگ
         child: Stack(
           children: [
             Column(
@@ -633,8 +635,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
                 colors: [
-                  Color.fromARGB(255, 226, 66, 188),
-                  Color.fromARGB(255, 244, 114, 124),
+                  Color(0xFF1A4FAE),
+                  Color(0xFF2F63C7),
                 ],
               )),
               padding: EdgeInsets.all(20),

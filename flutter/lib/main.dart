@@ -531,7 +531,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
               ? (context, child) => AccessibilityListener(
                     child: MediaQuery(
                       data: MediaQuery.of(context).copyWith(
-                        textScaler: TextScaler.linear(1.0),
+                        textScaler: TextScaler.linear(0.92),  // کاریا: قلمِ ریزتر
                       ),
                       child: child ?? Container(),
                     ),

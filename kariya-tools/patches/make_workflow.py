@@ -76,6 +76,7 @@ def main(target):
         block = drop_arm(NL.join(lines[a:b]).rstrip() + NL)
         if name == "build-for-windows-flutter":
             block = use_artifact_instead_of_release(block)
+            block = brand_package_steps(block)
         out.append(block)
 
     dst = os.path.join(target, ".github", "workflows", "kariya-windows.yml")
@@ -119,6 +120,35 @@ def main(target):
 
 
 ARM_MARKERS = ("aarch64", "windows-11-arm", "ARM64")
+
+
+def brand_package_steps(block):
+    """
+    نامِ RustDesk را از خودِ بسته‌بندی هم بیرون می‌کشد.
+
+    🔴 مالک روی نسخه‌ی نصب‌شده دید که «موقع نصب نوشت RustDesk». علتش این بود
+    که فقط رشته‌های داخل برنامه عوض شده بودند، ولی فایل اجرایی هنوز
+    rustdesk.exe نام داشت و سازنده‌ی MSI هم پیش‌فرضش «RustDesk» است. پس:
+      ۱. فایل اجرایی به KariyaDesk.exe تغییر نام می‌دهد
+      ۲. بسته‌بندِ خوداستخراج همان را می‌گیرد
+      ۳. MSI با --app-name ساخته می‌شود تا همه‌ی متن‌های نصب عوض شود
+      ۴. نام فایل‌های خروجی هم KariyaDesk می‌شود
+    """
+    out = block
+    out = out.replace(
+        "          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/rustdesk.exe",
+        "          mv ../../rustdesk/rustdesk.exe ../../rustdesk/KariyaDesk.exe" + NL +
+        "          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/KariyaDesk.exe")
+    out = out.replace(
+        "python preprocess.py --arp -d ../../rustdesk",
+        "python preprocess.py --arp --app-name KariyaDesk -d ../../rustdesk")
+    out = out.replace("./SignOutput/rustdesk-${{ env.VERSION }}",
+                      "./SignOutput/KariyaDesk-${{ env.VERSION }}")
+    out = out.replace("../../SignOutput/rustdesk-${{ env.VERSION }}",
+                      "../../SignOutput/KariyaDesk-${{ env.VERSION }}")
+    out = out.replace("sha256sum ../../SignOutput/rustdesk-*.msi",
+                      "sha256sum ../../SignOutput/KariyaDesk-*.msi")
+    return out
 
 
 def use_artifact_instead_of_release(block):

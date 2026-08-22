@@ -315,6 +315,7 @@ def main(target):
         os.path.join("res", "64x64.png"): "64x64.png",
         os.path.join("res", "128x128.png"): "128x128.png",
         os.path.join("res", "128x128@2x.png"): "128x128@2x.png",
+        os.path.join("libs", "portable", "src", "res", "label.png"): "label.png",
         os.path.join("flutter", "assets", "logo.png"): "logo.png",
         os.path.join("flutter", "assets", "logo_light.png"): "logo_light.png",
         os.path.join("flutter", "assets", "logo_dark.png"): "logo_dark.png",

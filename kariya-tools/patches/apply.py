@@ -129,6 +129,7 @@ def main(target):
         "import 'package:flutter_hbb/kariya/kariya_api.dart';",
         "import 'package:flutter_hbb/kariya/login_gate.dart';",
         "import 'package:flutter_hbb/kariya/ad_banner.dart';",
+        "import 'package:flutter_hbb/kariya/account_strip.dart';",
     ])
     gate_old = (
         "  Widget build(BuildContext context) {" + NL +
@@ -137,20 +138,17 @@ def main(target):
     gate_new = (
         "  Widget build(BuildContext context) {" + NL +
         "    super.build(context);" + NL +
-        "    // --- کاریا: تا وارد نشده، شناسه و رمز اتصال نشان داده نمی‌شود ---" + NL +
-        "    return ValueListenableBuilder<bool>(" + NL +
-        "      valueListenable: KariyaApi.loggedIn," + NL +
-        "      builder: (context, isLoggedIn, _) => isLoggedIn" + NL +
-        "          ? _kariyaHome(context)" + NL +
-        "          : KariyaLoginGate(onSuccess: () => setState(() {}))," + NL +
-        "    );" + NL +
+        "    // کاریا: ورود اختیاری است؛ برنامه بدون حساب هم کامل کار می‌کند." + NL +
+        "    return _kariyaHome(context);" + NL +
         "  }" + NL + NL +
         "  Widget _kariyaHome(BuildContext context) {" + NL +
         "    final isIncomingOnly = bind.isIncomingOnly();" + NL)
     banner_old = "      if (!isOutgoingOnly) buildPasswordBoard(context),"
-    banner_new = (banner_old + NL + "      const KariyaAdBanner(),")
-    edit(home, [(gate_old, gate_new, "_kariyaHome"),
-                (banner_old, banner_new, "KariyaAdBanner()")])
+    banner_new = (banner_old + NL +
+                  "      const KariyaAccountStrip()," + NL +
+                  "      const KariyaAdBanner(),")
+    edit(home, [(gate_old, gate_new, "ورود اختیاری است"),
+                (banner_old, banner_new, "KariyaAccountStrip()")])
 
     # ۵) خواندن نشست ذخیره‌شده هنگام بالا آمدن برنامه
     main_dart = os.path.join(target, "flutter", "lib", "main.dart")
@@ -291,6 +289,41 @@ def main(target):
          "  }",
          'KariyaWeave(' + NL + '      child: Container('),
     ])
+
+    # ۱۱) برند: نام و آیکون در همه‌ی جاهایی که ویندوز و برنامه نشان می‌دهند
+    edit(os.path.join(target, "libs", "hbb_common", "src", "config.rs"), [
+        ('RwLock::new("RustDesk".to_owned())',
+         'RwLock::new("%s".to_owned())' % APP_NAME, 'RwLock::new("%s"' % APP_NAME)])
+
+    edit(os.path.join(target, "flutter", "windows", "runner", "Runner.rc"), [
+        (r'VALUE "FileDescription", "RustDesk Remote Desktop" "\0"',
+         r'VALUE "FileDescription", "Kariya Desk - Remote Support" "\0"',
+         "Kariya Desk - Remote Support"),
+        (r'VALUE "ProductName", "RustDesk" "\0"',
+         r'VALUE "ProductName", "%s" "\0"' % APP_NAME,
+         r'VALUE "ProductName", "%s"' % APP_NAME),
+    ], required=False)
+
+    brand = os.path.join(ROOT, "assets", "brand")
+    icons = {
+        os.path.join("flutter", "windows", "runner", "resources", "app_icon.ico"): "kariya.ico",
+        os.path.join("res", "icon.ico"): "kariya.ico",
+        os.path.join("res", "tray-icon.ico"): "kariya.ico",
+        os.path.join("res", "32x32.png"): "32x32.png",
+        os.path.join("res", "64x64.png"): "64x64.png",
+        os.path.join("res", "128x128.png"): "128x128.png",
+        os.path.join("res", "128x128@2x.png"): "128x128@2x.png",
+        os.path.join("flutter", "assets", "logo.png"): "logo.png",
+        os.path.join("flutter", "assets", "logo_light.png"): "logo_light.png",
+        os.path.join("flutter", "assets", "logo_dark.png"): "logo_dark.png",
+    }
+    for rel, name in icons.items():
+        src = os.path.join(brand, name)
+        if os.path.isfile(src):
+            dst = os.path.join(target, rel)
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copy2(src, dst)
+    print("  ✓ آیکون و لوگوی کاریا جای آیکون‌های RustDesk نشست")
 
     print(NL + "تمام شد؛ سورس آماده‌ی ساخت است.")
 

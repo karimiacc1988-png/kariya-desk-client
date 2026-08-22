@@ -31,6 +31,8 @@ import 'package:flutter_hbb/kariya/login_gate.dart';
 import 'package:flutter_hbb/kariya/ad_banner.dart';
 // --- کاریا دسک ---
 import 'package:flutter_hbb/kariya/kariya_theme.dart';
+// --- کاریا دسک ---
+import 'package:flutter_hbb/kariya/account_strip.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);
@@ -65,13 +67,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    // --- کاریا: تا وارد نشده، شناسه و رمز اتصال نشان داده نمی‌شود ---
-    return ValueListenableBuilder<bool>(
-      valueListenable: KariyaApi.loggedIn,
-      builder: (context, isLoggedIn, _) => isLoggedIn
-          ? _kariyaHome(context)
-          : KariyaLoginGate(onSuccess: () => setState(() {})),
-    );
+    // کاریا: ورود اختیاری است؛ برنامه بدون حساب هم کامل کار می‌کند.
+    return _kariyaHome(context);
   }
 
   Widget _kariyaHome(BuildContext context) {
@@ -112,6 +109,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
+      const KariyaAccountStrip(),
       const KariyaAdBanner(),
       FutureBuilder<Widget>(
         future: Future.value(

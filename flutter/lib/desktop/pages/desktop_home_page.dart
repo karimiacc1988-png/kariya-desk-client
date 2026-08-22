@@ -31,6 +31,8 @@ import 'package:flutter_hbb/kariya/kariya_api.dart';
 import 'package:flutter_hbb/kariya/login_gate.dart';
 import 'package:flutter_hbb/kariya/ad_banner.dart';
 import 'package:flutter_hbb/kariya/account_strip.dart';
+import 'package:flutter_hbb/kariya/brand_bits.dart';
+import 'package:flutter_hbb/kariya/products.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);
@@ -91,6 +93,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isIncomingOnly = bind.isIncomingOnly();
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
+      const KariyaBrandHeader(),
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
       // کاریا: برچسب Powered by برداشته شد.
       Align(
@@ -101,6 +104,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
       const KariyaAccountStrip(),
+      const KariyaProductsButton(),
       const KariyaAdBanner(),
       FutureBuilder<Widget>(
         future: Future.value(
@@ -121,6 +125,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         },
       ),
       buildPluginEntry(),
+      const KariyaMadeBy(),
     ];
     if (isIncomingOnly) {
       children.addAll([
@@ -143,7 +148,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         width: isIncomingOnly ? 280.0 : 200.0,
         color: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF101B2E)
-            : const Color(0xFFF2F6FD),
+            : Colors.white,
         child: Stack(
           children: [
             Column(
@@ -192,9 +197,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   buildRightPane(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: ConnectionPage(),
+    return KariyaWeave(
+      child: Container(
+        color: Colors.transparent,
+        child: ConnectionPage(),
+      ),
     );
   }
 

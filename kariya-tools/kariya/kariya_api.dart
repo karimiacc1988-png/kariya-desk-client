@@ -217,6 +217,32 @@ class KariyaApi {
     }
   }
 
+  /// فهرست «دیگر محصولات کاریا» — از سرور، تا افزودن محصول بیلد نخواهد.
+  static Future<List<Map<String, dynamic>>> fetchProducts() async {
+    try {
+      final res = await http
+          .get(Uri.parse('$base/api/app/products'))
+          .timeout(_timeout);
+      if (res.statusCode != 200) return [];
+      final body = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      return ((body['products'] ?? []) as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> productClick(int id) async {
+    try {
+      await http
+          .post(Uri.parse('$base/api/app/product/click'),
+              headers: {'Content-Type': 'application/json; charset=utf-8'},
+              body: jsonEncode({'id': id}))
+          .timeout(_timeout);
+    } catch (_) {}
+  }
+
   static Future<void> clickAd(int id) async {
     try {
       await http

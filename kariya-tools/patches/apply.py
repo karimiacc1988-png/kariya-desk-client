@@ -130,6 +130,8 @@ def main(target):
         "import 'package:flutter_hbb/kariya/login_gate.dart';",
         "import 'package:flutter_hbb/kariya/ad_banner.dart';",
         "import 'package:flutter_hbb/kariya/account_strip.dart';",
+        "import 'package:flutter_hbb/kariya/brand_bits.dart';",
+        "import 'package:flutter_hbb/kariya/products.dart';",
     ])
     gate_old = (
         "  Widget build(BuildContext context) {" + NL +
@@ -146,6 +148,7 @@ def main(target):
     banner_old = "      if (!isOutgoingOnly) buildPasswordBoard(context),"
     banner_new = (banner_old + NL +
                   "      const KariyaAccountStrip()," + NL +
+                  "      const KariyaProductsButton()," + NL +
                   "      const KariyaAdBanner(),")
     edit(home, [(gate_old, gate_new, "ورود اختیاری است"),
                 (banner_old, banner_new, "KariyaAccountStrip()")])
@@ -252,14 +255,19 @@ def main(target):
     # می‌کرد صفحه هنوز بارگذاری نشده — خطوط پشتِ کارت‌های رنگی شبیه اسکلتِ
     # لود می‌شدند. پس اینجا فقط رنگ و کارت و فونت می‌ماند، بدون خط‌کشی.
     edit(home, [
-        # ستون شناسه/رمز: کاغذِ ساده‌ی کاریا، بدون خط‌کشی
+        # ستون شناسه/رمز: کاغذِ ساده‌ی کاریا، بدون خط‌کشی (خط‌کشی در ناحیه‌ی کاربری است)
         ("        width: isIncomingOnly ? 280.0 : 200.0," + NL +
          "        color: Theme.of(context).colorScheme.background,",
          "        width: isIncomingOnly ? 280.0 : 200.0," + NL +
          "        color: Theme.of(context).brightness == Brightness.dark" + NL +
          "            ? const Color(0xFF101B2E)" + NL +
-         "            : const Color(0xFFF2F6FD),",
-         "0xFFF2F6FD"),
+         "            : Colors.white,",
+         "            : Colors.white,"),
+        # سربرگ برند بالای ستون
+        ("    final children = <Widget>[" + NL,
+         "    final children = <Widget>[" + NL +
+         "      const KariyaBrandHeader()," + NL,
+         "const KariyaBrandHeader(),"),
         # کادر شناسه و کادر رمز، هرکدام یک کارت کاریا
         ("  buildIDBoard(BuildContext context) {" + NL,
          "  buildIDBoard(BuildContext context) =>" + NL +
@@ -271,8 +279,7 @@ def main(target):
          "      KariyaCard(child: _kariyaPasswordBoard(context));" + NL + NL +
          "  _kariyaPasswordBoard(BuildContext context) {" + NL,
          "_kariyaPasswordBoard"),
-        # 🔴 «Powered by RustDesk» بالای ستون: با عوض شدن نام برنامه، خودِ
-        # RustDesk این برچسب را روشن می‌کند. برای نسخه‌ی برندشده باید برود.
+        # 🔴 «Powered by RustDesk» برای نسخه‌ی برندشده روشن می‌شد؛ برداشته شد.
         ("      if (bind.isCustomClient())" + NL +
          "        Align(" + NL +
          "          alignment: Alignment.center," + NL +
@@ -280,6 +287,27 @@ def main(target):
          "        ),",
          "      // کاریا: برچسب Powered by برداشته شد.",
          "کاریا: برچسب Powered by"),
+        # پانویس «محصول کاریا حساب» ته ستون
+        ("      buildPluginEntry()," + NL + "    ];",
+         "      buildPluginEntry()," + NL +
+         "      const KariyaMadeBy()," + NL + "    ];",
+         "const KariyaMadeBy(),"),
+        # ناحیه‌ی کاربری: مربع‌های کاریا پشتش — خواسته‌ی مالک
+        ("  buildRightPane(BuildContext context) {" + NL +
+         "    return Container(" + NL +
+         "      color: Theme.of(context).scaffoldBackgroundColor," + NL +
+         "      child: ConnectionPage()," + NL +
+         "    );" + NL +
+         "  }",
+         "  buildRightPane(BuildContext context) {" + NL +
+         "    return KariyaWeave(" + NL +
+         "      child: Container(" + NL +
+         "        color: Colors.transparent," + NL +
+         "        child: ConnectionPage()," + NL +
+         "      )," + NL +
+         "    );" + NL +
+         "  }",
+         "KariyaWeave("),
     ])
 
     # کارت‌های دستگاه‌ها: RustDesk برای هر دستگاه یک رنگِ تصادفی می‌سازد و

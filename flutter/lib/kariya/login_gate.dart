@@ -33,6 +33,13 @@ class _KariyaLoginGateState extends State<KariyaLoginGate> {
   bool _expired = false;
   Timer? _poll;
 
+  // حالت دوم: کسی که حساب کاریا ندارد و فقط خودش را معرفی می‌کند.
+  bool _selfMode = false;
+  final _name = TextEditingController();
+  final _business = TextEditingController();
+  final _phone = TextEditingController();
+  bool _saving = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +49,29 @@ class _KariyaLoginGateState extends State<KariyaLoginGate> {
   @override
   void dispose() {
     _poll?.cancel();
+    _name.dispose();
+    _business.dispose();
+    _phone.dispose();
     super.dispose();
+  }
+
+  Future<void> _register() async {
+    if (_saving) return;
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final err = await KariyaApi.register(_name.text.trim(),
+        _business.text.trim(), _phone.text.trim(), 'windows');
+    if (!mounted) return;
+    setState(() {
+      _saving = false;
+      _error = err;
+    });
+    if (err == null) {
+      _poll?.cancel();
+      widget.onSuccess?.call();
+    }
   }
 
   Future<void> _start() async {
@@ -156,6 +185,8 @@ class _KariyaLoginGateState extends State<KariyaLoginGate> {
       ];
     }
 
+    if (_selfMode) return _selfForm(dark, ink, soft);
+
     return [
       Center(child: _mark()),
       const SizedBox(height: 16),
@@ -191,8 +222,98 @@ class _KariyaLoginGateState extends State<KariyaLoginGate> {
               style: TextStyle(fontFamily: K.font, fontSize: 11.5, color: soft)),
         ],
       ),
+      const SizedBox(height: 10),
+      Center(
+        child: TextButton(
+          onPressed: () => setState(() => _selfMode = true),
+          child: Text('حساب کاریا ندارم',
+              style: TextStyle(
+                  fontFamily: K.font,
+                  fontSize: 12,
+                  color: dark ? K.blueDark : K.blue)),
+        ),
+      ),
     ];
   }
+
+  /// معرفی ساده: نام و نام کسب‌وکار — بدون حساب کاریا، بدون رمز.
+  List<Widget> _selfForm(bool dark, Color ink, Color soft) => [
+        Center(child: _mark()),
+        const SizedBox(height: 16),
+        Text('معرفی کوتاه',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontFamily: K.font,
+                fontSize: 19,
+                fontWeight: FontWeight.w700,
+                color: ink)),
+        const SizedBox(height: 6),
+        Text('حساب کاریا لازم نیست؛ فقط بگویید کی هستید.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontFamily: K.font, fontSize: 12.5, height: 2, color: soft)),
+        const SizedBox(height: 18),
+        _field(_name, 'نام و نام خانوادگی', Icons.person_rounded, dark),
+        const SizedBox(height: 10),
+        _field(_business, 'نام کسب‌وکار', Icons.storefront_rounded, dark),
+        const SizedBox(height: 10),
+        _field(_phone, 'شماره موبایل (اختیاری)', Icons.smartphone_rounded,
+            dark, digits: true),
+        if (_error != null) ...[
+          const SizedBox(height: 12),
+          Text(_error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontFamily: K.font, fontSize: 12.5, color: K.danger)),
+        ],
+        const SizedBox(height: 18),
+        _button(_saving ? 'در حال ثبت…' : 'شروع استفاده', _register),
+        const SizedBox(height: 6),
+        Center(
+          child: TextButton(
+            onPressed: () => setState(() {
+              _selfMode = false;
+              _error = null;
+            }),
+            child: Text('حساب کاریا دارم',
+                style: TextStyle(
+                    fontFamily: K.font,
+                    fontSize: 12,
+                    color: dark ? K.blueDark : K.blue)),
+          ),
+        ),
+      ];
+
+  Widget _field(TextEditingController c, String label, IconData icon,
+          bool dark, {bool digits = false}) =>
+      TextField(
+        controller: c,
+        inputFormatters:
+            digits ? [FilteringTextInputFormatter.digitsOnly] : null,
+        style: TextStyle(
+            fontFamily: K.font, fontSize: 14, color: dark ? K.inkDark : K.ink),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+              fontFamily: K.font,
+              fontSize: 13,
+              color: dark ? K.softDark : K.soft),
+          prefixIcon: Icon(icon, size: 19, color: dark ? K.blueDark : K.blue2),
+          filled: true,
+          fillColor: dark ? Colors.white10 : K.ground,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide:
+                BorderSide(color: dark ? K.blueDark : K.blue, width: 1.6),
+          ),
+        ),
+      );
 
   Widget _mark() => Container(
         width: 58,

@@ -182,6 +182,41 @@ class KariyaApi {
     }
   }
 
+  /// ثبت‌نام سریع برای کسی که حساب کاریا ندارد. null یعنی موفق.
+  ///
+  /// ⚠️ عمداً بدون تأیید پیامکی: ورود در این برنامه اختیاری است و این حساب
+  /// فقط می‌گوید کدام کسب‌وکار دارد استفاده می‌کند، نه اینکه به چیزی دسترسی
+  /// بدهد. اگر روزی دسترسی‌ای به آن وصل شد، همان روز تأیید شماره لازم می‌شود.
+  static Future<String?> register(
+      String name, String business, String phone, String device) async {
+    try {
+      final res = await http
+          .post(Uri.parse('$base/api/app/register'),
+              headers: {'Content-Type': 'application/json; charset=utf-8'},
+              body: jsonEncode({
+                'name': name,
+                'business': business,
+                'phone': phone,
+                'device': device,
+              }))
+          .timeout(_timeout);
+      final body = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      if (res.statusCode == 200 && body['token'] != null) {
+        token = body['token'] as String;
+        userName = (body['name'] ?? '') as String;
+        userPhone = (body['phone'] ?? '') as String;
+        await _save();
+        loggedIn.value = true;
+        return null;
+      }
+      return (body['error'] ?? 'ثبت‌نام انجام نشد') as String;
+    } on SocketException {
+      return 'اتصال به سرور کاریا برقرار نشد.';
+    } catch (_) {
+      return 'خطای غیرمنتظره';
+    }
+  }
+
   static Future<void> clickAd(int id) async {
     try {
       await http

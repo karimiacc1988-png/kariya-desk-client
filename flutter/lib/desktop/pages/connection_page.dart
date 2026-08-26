@@ -78,6 +78,25 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
               .marginOnly(left: em),
         );
 
+    // کاریا: وقتی ارتباط برقرار نیست کاربر باید بتواند خودش دوباره
+    // تلاش کند و منتظر تلاشِ خودکارِ بعدی نماند.
+    // ⚠️ اگر سرویس خوابیده باشد این دکمه را نشان نمی‌دهیم؛ آنجا
+    // «اجرای سرویس» کار درست است و همان‌جا دیده می‌شود.
+    retryConnectWidget() => Offstage(
+          offstage: _svcStopped.value ||
+              stateGlobal.svcStatus.value == SvcStatus.ready,
+          child: InkWell(
+                  onTap: () {
+                    stateGlobal.svcStatus.value = SvcStatus.connecting;
+                    bind.mainRetryConnect();
+                  },
+                  child: Text(translate("Retry connect"),
+                      style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          fontSize: em)))
+              .marginOnly(left: em),
+        );
+
     setupServerWidget() => Flexible(
           child: Offstage(
             offstage: !(!_svcStopped.value &&
@@ -131,6 +150,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
             ),
             // stop
             if (!isIncomingOnly) startServiceWidget(),
+            if (!isIncomingOnly) retryConnectWidget(),
             // ready && public
             // No need to show the guide if is custom client.
             if (!isIncomingOnly) setupServerWidget(),

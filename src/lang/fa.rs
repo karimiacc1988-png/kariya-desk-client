@@ -13,6 +13,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Service is running", "سرویس در حال اجرا است"),
         ("Service is not running", "سرویس اجرا نشده"),
         ("not_ready_status", "ارتباط برقرار نشد. لطفا شبکه خود را بررسی کنید"),
+        ("Retry connect", "تلاش برای اتصال"),
         ("Control Remote Desktop", "کنترل دسکتاپ میزبان"),
         ("Transfer file", "انتقال فایل"),
         ("Connect", "اتصال"),

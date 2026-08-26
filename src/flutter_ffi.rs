@@ -2130,6 +2130,11 @@ pub fn main_get_data_dir_ios(app_dir: String) -> SyncReturn<String> {
     SyncReturn(data_dir.to_string_lossy().to_string())
 }
 
+/// کاریا: پشتِ دکمه‌ی «تلاش برای اتصال».
+pub fn main_retry_connect() {
+    crate::refresh_rendezvous_server();
+}
+
 pub fn main_stop_service() {
     #[cfg(target_os = "android")]
     {

@@ -722,7 +722,11 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
     // Menu button is equidistant from both edges, so grow in reading direction.
     switch (textDirection) {
       case TextDirection.rtl:
-        x = size.width - position.right - childSize.width;
+        // کاریا: اگر رکت یک نقطه باشد، لبه‌ی راستِ منو را روی
+        // همان نقطه بگذار؛ وگرنه فرمولِ استاندارد.
+        x = position.left == position.right
+            ? position.left - childSize.width
+            : size.width - position.right - childSize.width;
         break;
       case TextDirection.ltr:
         x = position.left;

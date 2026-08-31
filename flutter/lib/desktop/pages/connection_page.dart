@@ -449,6 +449,9 @@ class _ConnectionPageState extends State<ConnectionPage>
                             height: 1.4,
                           ),
                           maxLines: 1,
+                          // کاریا: ارقام چپ‌به‌راست وارد شوند
+                          textDirection: TextDirection.ltr,
+                          textAlign: TextAlign.right,
                           cursorColor:
                               Theme.of(context).textTheme.titleLarge?.color,
                           decoration: InputDecoration(

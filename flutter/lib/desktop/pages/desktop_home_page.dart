@@ -256,6 +256,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                       child: TextFormField(
                         controller: model.serverId,
                         readOnly: true,
+                        // کاریا: شناسه چپ‌به‌راست خوانده شود
+                        textDirection: TextDirection.ltr,
+                        textAlign: TextAlign.right,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.only(top: 10, bottom: 10),
@@ -357,6 +360,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                           child: TextFormField(
                             controller: model.serverPasswd,
                             readOnly: true,
+                            // کاریا: رمز چپ‌به‌راست خوانده شود
+                            textDirection: TextDirection.ltr,
+                            textAlign: TextAlign.right,
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               contentPadding:

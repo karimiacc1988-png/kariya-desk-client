@@ -187,6 +187,9 @@ class _PeerCardState extends State<_PeerCard>
                         Expanded(
                             child: Text(
                           peer.alias.isEmpty ? formatID(peer.id) : peer.alias,
+                          // کاریا: شناسه‌ی عددی چپ‌به‌راست
+                          textDirection:
+                              peer.alias.isEmpty ? TextDirection.ltr : null,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleSmall,
                         )),
@@ -369,6 +372,9 @@ class _PeerCardState extends State<_PeerCard>
                         Expanded(
                             child: Text(
                           peer.alias.isEmpty ? formatID(peer.id) : peer.alias,
+                          // کاریا: شناسه‌ی عددی چپ‌به‌راست
+                          textDirection:
+                              peer.alias.isEmpty ? TextDirection.ltr : null,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleSmall,
                         )),

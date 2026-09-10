@@ -493,7 +493,9 @@ class _ConnectionPageState extends State<ConnectionPage>
                     maxHeight = maxHeight.clamp(0, 200);
 
                     return Align(
-                      alignment: Alignment.topLeft,
+                      // کاریا: در راست‌چین باید به لبه‌ی راستِ کادر بچسبد،
+                      // وگرنه فهرست به بیرونِ لبه‌ی چپِ پنجره پرت می‌شود.
+                      alignment: AlignmentDirectional.topStart,
                       child: Container(
                           decoration: BoxDecoration(
                             boxShadow: [

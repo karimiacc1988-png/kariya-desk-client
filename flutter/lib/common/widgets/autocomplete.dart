@@ -323,9 +323,8 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
                         decoration: BoxDecoration(
                           color: str2color(
                               '${widget.peer.id}${widget.peer.platform}', 0x7f),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(tileRadius),
-                            bottomLeft: Radius.circular(tileRadius),
+                          borderRadius: BorderRadiusDirectional.horizontal(
+                            start: Radius.circular(tileRadius),
                           ),
                         ),
                         alignment: Alignment.center,
@@ -337,12 +336,11 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
                                 size: 30))),
                     Expanded(
                       child: Container(
-                          padding: EdgeInsets.only(left: 10),
+                          padding: EdgeInsetsDirectional.only(start: 10),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.background,
-                            borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(tileRadius),
-                              bottomRight: Radius.circular(tileRadius),
+                            borderRadius: BorderRadiusDirectional.horizontal(
+                              end: Radius.circular(tileRadius),
                             ),
                           ),
                           child: Row(
@@ -366,6 +364,13 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
                                                           ? formatID(
                                                               widget.peer.id)
                                                           : widget.peer.alias,
+                                                      // کاریا: شناسه‌ی عددی چپ‌به‌راست
+                                                      textDirection: widget
+                                                              .peer
+                                                              .alias
+                                                              .isEmpty
+                                                          ? TextDirection.ltr
+                                                          : null,
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                       style: Theme.of(context)
@@ -389,7 +394,8 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
                                                         : Container(),
                                                   ])),
                                               Align(
-                                                alignment: Alignment.centerLeft,
+                                                alignment:
+                                                    AlignmentDirectional.centerStart,
                                                 child: Text(
                                                   name,
                                                   style: greyStyle,
@@ -417,9 +423,9 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
       child: Stack(children: [
         child,
         if (colors.isNotEmpty)
-          Positioned(
+          PositionedDirectional(
             top: 5,
-            right: 10,
+            end: 10,
             child: CustomPaint(
               painter: TagPainter(radius: 3, colors: colors),
             ),

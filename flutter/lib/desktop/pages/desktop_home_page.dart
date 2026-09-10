@@ -96,10 +96,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       const KariyaBrandHeader(),
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
       // کاریا: برچسب Powered by برداشته شد.
-      Align(
-        alignment: Alignment.center,
-        child: loadLogo(),
-      ),
+      // کاریا: لوگوی بزرگ و عنوان «دسکتاپ شما» برداشته شدند — لوگو بالای
+      // ستون هست و تکرارشان شناسه و رمز و پیامِ نصب را از دید کاربر
+      // پایین می‌انداخت.
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
@@ -422,26 +421,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isOutgoingOnly = bind.isOutgoingOnly();
     return Padding(
       padding:
-          const EdgeInsets.only(left: 20.0, right: 16, top: 16.0, bottom: 5),
+          const EdgeInsets.only(left: 20.0, right: 16, top: 4.0, bottom: 5),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            children: [
-              if (!isOutgoingOnly)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    translate("Your Desktop"),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-            ],
-          ),
-          SizedBox(
-            height: 10.0,
-          ),
           if (!isOutgoingOnly)
             Text(
               translate("desk_tip"),

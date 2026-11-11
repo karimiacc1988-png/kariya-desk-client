@@ -1,0 +1,32 @@
+name: انتشار عمومی خروجی کاریا دسک
+
+# کاریا: آخرین بیلد موفق ویندوز را به یک Release عمومی تبدیل می‌کند تا سرور
+# بدون لاگین گیت‌هاب فایل را بردارد.  تگ:  kariya-rel-<نسخه>
+on:
+  push:
+    tags: ["kariya-rel-*"]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: انتشار
+        run: |
+          set -euo pipefail
+          VER="${GITHUB_REF_NAME#kariya-rel-}"
+          RUN=$(gh run list --repo "$REPO" --workflow kariya-windows.yml --status success -L 1 --json databaseId -q '.[0].databaseId')
+          echo "بیلد: $RUN"
+          gh run download "$RUN" --repo "$REPO" -D out
+          EXE=$(find out -path '*installer*' -iname '*.exe' | head -1)
+          MSI=$(find out -path '*installer*' -iname '*.msi' | head -1)
+          cp "$EXE" "KariyaDesk-$VER-Setup.exe"
+          cp "$MSI" "KariyaDesk-$VER.msi"
+          ls -la KariyaDesk-*
+          gh release create "$GITHUB_REF_NAME" --repo "$REPO" --title "KariyaDesk $VER" --notes "بیلد $RUN" "KariyaDesk-$VER-Setup.exe" "KariyaDesk-$VER.msi"

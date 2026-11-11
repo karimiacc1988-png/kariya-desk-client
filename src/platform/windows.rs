@@ -2124,6 +2124,8 @@ pub fn prepare_custom_client_update() -> ResultType<bool> {
 }
 
 pub fn get_license_from_exe_name() -> ResultType<CustomServer> {
+    // کاریا: سرور از نام فایل خوانده نمی‌شود.
+    if true { hbb_common::bail!("kariya: fixed server"); }
     let mut exe = std::env::current_exe()?.to_str().unwrap_or("").to_owned();
     // if defined portable appname entry, replace original executable name with it.
     if let Ok(portable_exe) = std::env::var(PORTABLE_APPNAME_RUNTIME_ENV_KEY) {
@@ -3827,6 +3829,8 @@ pub fn alloc_console() {
 }
 
 fn get_license() -> Option<CustomServer> {
+    // کاریا: سرور از رجیستری هم خوانده نمی‌شود.
+    if true { return None; }
     let mut lic: CustomServer = Default::default();
     if let Ok(tmp) = get_license_from_exe_name() {
         lic = tmp;

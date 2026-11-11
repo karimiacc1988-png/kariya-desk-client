@@ -2078,7 +2078,23 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
     ThrottledInterval::new(i)
 }
 
+// کاریا: سرور و کلید قفل‌اند؛ در هیچ پروسه‌ای قابل تغییر نیستند.
+fn kariya_lock_server() {
+    let mut s = config::OVERWRITE_SETTINGS.write().unwrap();
+    s.insert("custom-rendezvous-server".to_owned(), "desk.kariyahesab.com".to_owned());
+    s.insert("relay-server".to_owned(), "desk.kariyahesab.com".to_owned());
+    s.insert("key".to_owned(), "yQh7HGyWBw2sb6SvcKWdXDFgec+a+2oEDLg4QUWh9ic=".to_owned());
+    drop(s);
+    let mut b = config::BUILTIN_SETTINGS.write().unwrap();
+    b.insert("hide-server-settings".to_owned(), "Y".to_owned());
+}
+
 pub fn load_custom_client() {
+    load_custom_client_inner();
+    kariya_lock_server();
+}
+
+fn load_custom_client_inner() {
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
